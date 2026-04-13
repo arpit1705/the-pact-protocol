@@ -11,10 +11,20 @@ export interface WorkoutLog {
   status: 'done' | 'missed';
   photoUrl?: string;
   notes?: string;
-  punishmentTriggered?: string; // punishment key
+  punishmentSelected: string | null;
+  punishmentResolvedAt: string | null;
+  mutualMiss?: boolean; // true when both users missed on the same date — punishment cancelled
 }
 
-export type PunishmentCounts = Record<string, Record<string, number>>;
+export type PunishmentCounts = Record<string, Record<string, { total: number; resolved: number }>>;
+
+export interface ResolutionEvent {
+  id: string;
+  debtorUserId: string;
+  punishmentType: string;
+  resolvedBy: string;
+  resolvedAt: string; // ISO YYYY-MM-DD
+}
 
 export interface PunishmentOption {
   key: string;
