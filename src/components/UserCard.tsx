@@ -22,29 +22,29 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishm
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-4xl">{user.emoji}</span>
-          <h3 className="text-3xl font-heading text-secondary">{user.name}</h3>
+          <h3 className="text-secondary">{user.name}</h3>
         </div>
         {totalPunishments > 0 && (
-          <span className="brutal-badge bg-destructive text-destructive-foreground animate-pulse-glow">
+          <span className="brutal-badge bg-destructive text-destructive-foreground animate-pulse-glow text-base">
             {totalPunishments} owed
           </span>
         )}
       </div>
 
       {/* Today's status */}
-      <div className={`brutal-badge text-base px-4 py-2 mb-4 w-full justify-center ${status.className}`}>
+      <div className={`brutal-badge text-lg px-4 py-2.5 mb-4 w-full justify-center ${status.className}`}>
         {status.label}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-accent/50 rounded-lg border-2 border-foreground p-3 text-center">
-          <p className="text-2xl font-heading">🔥 {streak}</p>
-          <p className="font-mono text-xs text-muted-foreground">day streak</p>
+          <p className="text-2xl font-heading font-extrabold">🔥 {streak}</p>
+          <p className="font-mono text-sm font-bold text-muted-foreground">day streak</p>
         </div>
         <div className="bg-accent/50 rounded-lg border-2 border-foreground p-3 text-center">
-          <p className="text-2xl font-heading">{monthlyCount.done}/{monthlyCount.total}</p>
-          <p className="font-mono text-xs text-muted-foreground">this month</p>
+          <p className="text-2xl font-heading font-extrabold">{monthlyCount.done}/{monthlyCount.total}</p>
+          <p className="font-mono text-sm font-bold text-muted-foreground">this month</p>
         </div>
       </div>
     </div>

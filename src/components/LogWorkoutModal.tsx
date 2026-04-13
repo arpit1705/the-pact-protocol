@@ -68,13 +68,13 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
         {/* User toggle */}
         <div className="mb-4">
-          <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider block mb-2">Who?</label>
+          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">Who?</label>
           <div className="flex bg-muted rounded-full border-2 border-foreground p-1">
             {USERS.map(u => (
               <button
                 key={u.id}
                 onClick={() => setUserId(u.id)}
-                className={`flex-1 py-2 rounded-full font-heading text-lg transition-all ${
+                className={`flex-1 py-2.5 rounded-full font-heading text-xl transition-all ${
                   userId === u.id
                     ? 'bg-primary text-primary-foreground shadow-brutal-sm'
                     : 'text-muted-foreground'
@@ -88,7 +88,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
         {/* Date */}
         <div className="mb-4">
-          <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider block mb-2">When?</label>
+          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">When?</label>
           <input
             type="date"
             value={date}
@@ -100,11 +100,11 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
         {/* Status toggle */}
         <div className="mb-4">
-          <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider block mb-2">Did it happen?</label>
+          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">Did it happen?</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setStatus('done')}
-              className={`brutal-btn py-4 rounded-lg text-lg ${
+              className={`brutal-btn py-4 rounded-lg text-xl ${
                 status === 'done'
                   ? 'bg-success text-success-foreground'
                   : 'bg-muted text-muted-foreground'
@@ -114,7 +114,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
             </button>
             <button
               onClick={() => setStatus('missed')}
-              className={`brutal-btn py-4 rounded-lg text-lg ${
+              className={`brutal-btn py-4 rounded-lg text-xl ${
                 status === 'missed'
                   ? 'bg-destructive text-destructive-foreground'
                   : 'bg-muted text-muted-foreground'
@@ -127,18 +127,18 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
         {/* Photo upload zone */}
         <div className="mb-4">
-          <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider block mb-2">
+          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">
             Sweaty selfie? Drop it here 📸
           </label>
           <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center text-muted-foreground hover:border-primary transition-colors cursor-pointer">
             <p className="text-3xl mb-2">📷</p>
-            <p className="font-mono text-xs">Photo upload coming soon™</p>
+            <p className="font-mono text-sm font-bold">Photo upload coming soon™</p>
           </div>
         </div>
 
         {/* Notes */}
         <div className="mb-6">
-          <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider block mb-2">Notes (optional)</label>
+          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">Notes (optional)</label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}

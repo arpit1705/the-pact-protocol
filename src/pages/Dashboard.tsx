@@ -39,13 +39,13 @@ export default function Dashboard({ data }: DashboardProps) {
 
       {/* Quick log buttons */}
       <div className="text-center space-y-3">
-        <p className="font-mono text-sm text-muted-foreground uppercase tracking-wider">⚡ Quick Log ⚡</p>
+        <p className="font-mono text-base font-bold text-muted-foreground uppercase tracking-wider">⚡ Quick Log ⚡</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {USERS.map(user => (
             <button
               key={user.id}
               onClick={() => setLogModalUser(user.id)}
-              className="brutal-btn bg-secondary text-secondary-foreground px-8 py-4 rounded-xl text-lg hover-bounce"
+              className="brutal-btn bg-secondary text-secondary-foreground px-8 py-4 rounded-xl text-xl hover-bounce"
             >
               {user.emoji} Log {user.name}'s Workout
             </button>

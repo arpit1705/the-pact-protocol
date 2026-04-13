@@ -35,7 +35,7 @@ export function PunishmentSelector({ missedUserId, data, logId, onClose }: Punis
           </button>
         </div>
 
-        <p className="font-mono text-sm mb-6 text-muted-foreground">
+        <p className="font-mono text-base font-bold mb-6 text-muted-foreground">
           Uh oh! <strong className="text-foreground">{missedUser.name} {missedUser.emoji}</strong> missed their workout.
           <br />
           <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong>, pick your punishment:
@@ -53,8 +53,8 @@ export function PunishmentSelector({ missedUserId, data, logId, onClose }: Punis
               }`}
             >
               <p className="text-2xl mb-1">{opt.emoji}</p>
-              <p className="font-heading text-lg text-secondary">{opt.name}</p>
-              <p className="font-mono text-xs text-muted-foreground">{opt.description}</p>
+              <p className="font-heading text-xl text-secondary">{opt.name}</p>
+              <p className="font-mono text-sm font-bold text-muted-foreground">{opt.description}</p>
             </button>
           ))}
         </div>

@@ -31,7 +31,7 @@ export function Header() {
             <Link
               key={item.path}
               to={item.path}
-              className={`brutal-btn px-4 py-2 rounded-lg text-sm ${
+              className={`brutal-btn px-5 py-2.5 rounded-lg text-xl ${
                 location.pathname === item.path
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-accent text-accent-foreground hover:bg-primary hover:text-primary-foreground'
@@ -59,7 +59,7 @@ export function Header() {
               key={item.path}
               to={item.path}
               onClick={() => setMenuOpen(false)}
-              className={`brutal-btn px-4 py-3 rounded-lg text-center ${
+              className={`brutal-btn px-4 py-3 rounded-lg text-center text-xl ${
                 location.pathname === item.path
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-accent text-accent-foreground'
