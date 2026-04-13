@@ -39,8 +39,8 @@ export default function History({ data }: HistoryProps) {
 
       {/* Monthly summary */}
       <div className="brutal-card bg-accent/30 p-4 text-center">
-        <p className="font-heading text-xl text-secondary">{currentMonth} Summary</p>
-        <div className="flex justify-center gap-6 mt-2 font-mono text-sm">
+        <p className="font-heading text-2xl text-secondary">{currentMonth} Summary</p>
+        <div className="flex justify-center gap-6 mt-2 font-mono text-base font-bold">
           {USERS.map(user => {
             const done = monthLogs.filter(l => l.userId === user.id && l.status === 'done').length;
             const total = monthLogs.filter(l => l.userId === user.id).length;
@@ -63,7 +63,7 @@ export default function History({ data }: HistoryProps) {
           <button
             key={opt.id}
             onClick={() => setFilter(opt.id)}
-            className={`flex-1 py-2 rounded-full font-heading transition-all ${
+            className={`flex-1 py-2.5 rounded-full font-heading text-lg transition-all ${
               filter === opt.id
                 ? 'bg-primary text-primary-foreground shadow-brutal-sm'
                 : 'text-muted-foreground'
@@ -85,12 +85,12 @@ export default function History({ data }: HistoryProps) {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{user.emoji}</span>
                   <div>
-                    <p className="font-heading text-lg text-secondary">{user.name}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{formatDate(log.date)}</p>
+                    <p className="font-heading text-xl text-secondary">{user.name}</p>
+                    <p className="font-mono text-sm font-bold text-muted-foreground">{formatDate(log.date)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`brutal-badge text-xs ${
+                  <span className={`brutal-badge ${
                     log.status === 'done'
                       ? 'bg-success text-success-foreground'
                       : 'bg-destructive text-destructive-foreground'
@@ -99,17 +99,17 @@ export default function History({ data }: HistoryProps) {
                   </span>
                   <button
                     onClick={() => setEditingLog(log.id)}
-                    className="brutal-btn p-2 rounded-lg bg-muted text-xs"
+                    className="brutal-btn p-2 rounded-lg bg-muted text-base"
                   >
                     ✏️
                   </button>
                 </div>
               </div>
               {log.notes && (
-                <p className="mt-2 text-sm text-muted-foreground ml-11">💬 {log.notes}</p>
+                <p className="mt-2 text-base text-muted-foreground ml-11">💬 {log.notes}</p>
               )}
               {punishment && (
-                <p className="mt-1 ml-11 font-mono text-xs text-destructive">
+                <p className="mt-1 ml-11 font-mono text-sm font-bold text-destructive">
                   ⚡ Punishment: {punishment.emoji} {punishment.name}
                 </p>
               )}

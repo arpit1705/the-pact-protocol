@@ -25,7 +25,7 @@ export function MotivationalBanner() {
 
   return (
     <div className="brutal-card bg-secondary text-secondary-foreground p-4 text-center">
-      <p className="font-mono text-sm md:text-base italic animate-bounce-in" key={index}>
+      <p className="font-mono text-base md:text-lg font-bold italic animate-bounce-in" key={index}>
         "{QUOTES[index]}"
       </p>
     </div>
