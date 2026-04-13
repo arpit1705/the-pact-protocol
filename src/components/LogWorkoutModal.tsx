@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { USERS } from '@/types';
 import { X } from 'lucide-react';
 import { PunishmentSelector } from '@/components/PunishmentSelector';
 import { ConfettiCelebration } from '@/components/ConfettiCelebration';
+import { useActiveUser } from '@/context/ActiveUserContext';
 import type { AppData } from '@/pages/Dashboard';
 
 interface LogWorkoutModalProps {
@@ -13,12 +13,15 @@ interface LogWorkoutModalProps {
 }
 
 export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWorkoutModalProps) {
-  const [userId, setUserId] = useState(editLog?.userId || initialUserId);
+  const { activeUser } = useActiveUser();
+  // For new logs: locked to activeUser. For edit: use the log's original userId.
+  const [userId] = useState(editLog?.userId ?? activeUser);
   const [date, setDate] = useState(editLog?.date || new Date().toISOString().split('T')[0]);
   const [status, setStatus] = useState<'done' | 'missed' | null>(editLog?.status || null);
   const [notes, setNotes] = useState(editLog?.notes || '');
   const [showPunishment, setShowPunishment] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showMutualMiss, setShowMutualMiss] = useState(false);
   const [submittedLogId, setSubmittedLogId] = useState<string | null>(null);
 
   const handleSubmit = () => {
@@ -27,8 +30,19 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
     if (editLog) {
       data.updateWorkoutLog(editLog.id, { userId, date, status, notes: notes || undefined });
     } else {
-      const log = data.addWorkoutLog({ userId, date, status, notes: notes || undefined });
+      const log = data.addWorkoutLog({
+        userId,
+        date,
+        status,
+        notes: notes || undefined,
+        punishmentSelected: null,
+        punishmentResolvedAt: null,
+      });
       setSubmittedLogId(log.id);
+      if (status === 'missed' && log.mutualMiss) {
+        setShowMutualMiss(true);
+        return;
+      }
     }
 
     if (status === 'done') {
@@ -41,6 +55,28 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
   if (showConfetti) {
     return <ConfettiCelebration onDone={onClose} />;
+  }
+
+  if (showMutualMiss) {
+    return (
+      <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+        <div className="brutal-card bg-background w-full md:max-w-lg md:rounded-xl rounded-t-2xl rounded-b-none md:rounded-b-xl p-6 animate-bounce-in text-center">
+          <p className="text-6xl mb-4">🤝</p>
+          <h2 className="text-3xl font-heading text-secondary mb-2">Mutual Miss!</h2>
+          <p className="font-mono text-base font-bold text-muted-foreground mb-6">
+            You both skipped on the same day. No punishments owed — this one cancels out.
+            <br /><br />
+            Don't let it happen again.
+          </p>
+          <button
+            onClick={onClose}
+            className="brutal-btn w-full py-4 rounded-xl text-xl font-heading bg-accent text-accent-foreground hover-bounce"
+          >
+            Understood 🫡
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (showPunishment) {
@@ -64,26 +100,6 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
           <button onClick={onClose} className="brutal-btn p-2 rounded-lg bg-muted">
             <X size={18} />
           </button>
-        </div>
-
-        {/* User toggle */}
-        <div className="mb-4">
-          <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">Who?</label>
-          <div className="flex bg-muted rounded-full border-2 border-foreground p-1">
-            {USERS.map(u => (
-              <button
-                key={u.id}
-                onClick={() => setUserId(u.id)}
-                className={`flex-1 py-2.5 rounded-full font-heading text-xl transition-all ${
-                  userId === u.id
-                    ? 'bg-primary text-primary-foreground shadow-brutal-sm'
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {u.emoji} {u.name}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Date */}

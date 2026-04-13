@@ -100,6 +100,10 @@ export default {
           "0%, 100%": { boxShadow: "0 0 5px hsl(var(--destructive))" },
           "50%": { boxShadow: "0 0 20px hsl(var(--destructive)), 0 0 30px hsl(var(--destructive) / 0.5)" },
         },
+        "pulse-glow-primary": {
+          "0%, 100%": { boxShadow: "0 0 5px hsl(var(--primary))" },
+          "50%": { boxShadow: "0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary) / 0.5)" },
+        },
         "confetti": {
           "0%": { transform: "translateY(0) rotate(0deg)", opacity: "1" },
           "100%": { transform: "translateY(-200px) rotate(720deg)", opacity: "0" },
@@ -111,6 +115,7 @@ export default {
         "spin-slow": "spin-slow 4s linear infinite",
         "bounce-in": "bounce-in 0.5s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "pulse-glow-primary": "pulse-glow-primary 2s ease-in-out infinite",
         "confetti": "confetti 1s ease-out forwards",
       },
     },

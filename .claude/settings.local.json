@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /c/dev/Development/the_pact_project/src/test/*.ts)",
+      "Bash(cat /c/dev/Development/the_pact_project/src/test/*.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(psql --version)",
+      "Bash(npm install:*)",
+      "Bash(DB_URL='postgresql://postgres:r76$%3F%2C9SskDP9c$@db.ggtwxezxioiqfhomxxkp.supabase.co:5432/postgres' node scripts/migrate.mjs)",
+      "Bash(ls c:/dev/Development/the_pact_project/.env*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

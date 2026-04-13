@@ -6,6 +6,8 @@ interface UserCardProps {
   todayStatus: 'done' | 'missed' | 'not-logged';
   monthlyCount: { done: number; total: number };
   totalPunishments: number;
+  isActiveUser: boolean;
+  onPickPunishment?: () => void;
 }
 
 const STATUS_CONFIG = {
@@ -14,15 +16,20 @@ const STATUS_CONFIG = {
   'not-logged': { label: '⏳ NOT LOGGED YET', className: 'bg-accent text-accent-foreground' },
 };
 
-export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishments }: UserCardProps) {
+export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishments, isActiveUser, onPickPunishment }: UserCardProps) {
   const status = STATUS_CONFIG[todayStatus];
 
   return (
-    <div className="brutal-card p-6 hover-bounce">
+    <div className={`brutal-card p-6 hover-bounce ${isActiveUser ? 'animate-pulse-glow-primary' : ''}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-4xl">{user.emoji}</span>
-          <h3 className="text-secondary">{user.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-secondary">{user.name}</h3>
+            {isActiveUser && (
+              <span className="brutal-badge bg-primary text-primary-foreground text-xs">YOU</span>
+            )}
+          </div>
         </div>
         {totalPunishments > 0 && (
           <span className="brutal-badge bg-destructive text-destructive-foreground animate-pulse-glow text-base">
@@ -47,6 +54,16 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishm
           <p className="font-mono text-sm font-bold text-muted-foreground">this month</p>
         </div>
       </div>
+
+      {/* Punishment alert — shown for the other user when they have pending missed workouts */}
+      {onPickPunishment && (
+        <button
+          onClick={onPickPunishment}
+          className="brutal-btn mt-3 w-full py-2.5 rounded-lg bg-destructive text-destructive-foreground text-base font-heading hover-bounce"
+        >
+          ⚠️ {user.name} missed a workout! Pick their punishment →
+        </button>
+      )}
     </div>
   );
 }

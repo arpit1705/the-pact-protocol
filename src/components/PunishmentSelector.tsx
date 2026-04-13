@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getOtherUser, getPunishmentOptions, USERS } from '@/types';
 import { X } from 'lucide-react';
+import { useActiveUser } from '@/context/ActiveUserContext';
 import type { AppData } from '@/pages/Dashboard';
 
 interface PunishmentSelectorProps {
@@ -12,18 +13,49 @@ interface PunishmentSelectorProps {
 
 export function PunishmentSelector({ missedUserId, data, logId, onClose }: PunishmentSelectorProps) {
   const [selected, setSelected] = useState<string | null>(null);
+  const { activeUser } = useActiveUser();
   const missedUser = USERS.find(u => u.id === missedUserId)!;
   const otherUser = getOtherUser(missedUserId);
   const options = getPunishmentOptions(missedUserId);
+
+  // Active user must be the OTHER person (not the one who missed) to pick punishment
+  const canPick = activeUser !== missedUserId;
 
   const handleConfirm = () => {
     if (!selected) return;
     data.incrementPunishment(missedUserId, selected);
     if (logId) {
-      data.updateWorkoutLog(logId, { punishmentTriggered: selected });
+      data.updateWorkoutLog(logId, { punishmentSelected: selected });
     }
     onClose();
   };
+
+  // Wrong user — show a redirect message
+  if (!canPick) {
+    return (
+      <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+        <div className="brutal-card bg-background w-full md:max-w-lg md:rounded-xl rounded-t-2xl rounded-b-none md:rounded-b-xl p-6 animate-bounce-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-heading text-secondary">⏸️ Not Your Turn</h2>
+            <button onClick={onClose} className="brutal-btn p-2 rounded-lg bg-muted">
+              <X size={18} />
+            </button>
+          </div>
+          <p className="font-mono text-base font-bold text-muted-foreground mb-6">
+            You missed your workout, <strong className="text-foreground">{missedUser.name} {missedUser.emoji}</strong>.
+            <br /><br />
+            Switch to <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong> using the pill in the top-right to pick your punishment.
+          </p>
+          <button
+            onClick={onClose}
+            className="brutal-btn w-full py-4 rounded-xl text-xl font-heading bg-muted text-muted-foreground hover-bounce"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">

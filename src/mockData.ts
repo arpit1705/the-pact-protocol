@@ -1,6 +1,6 @@
-import { WorkoutLog, PunishmentCounts } from '@/types';
+import { WorkoutLog, PunishmentCounts, ResolutionEvent } from '@/types';
 
-export function generateMockData(): { logs: WorkoutLog[]; punishments: PunishmentCounts } {
+export function generateMockData(): { logs: WorkoutLog[]; punishments: PunishmentCounts; resolutionLog: ResolutionEvent[] } {
   const logs: WorkoutLog[] = [];
   const today = new Date();
 
@@ -42,7 +42,8 @@ export function generateMockData(): { logs: WorkoutLog[]; punishments: Punishmen
       date: d.toISOString().split('T')[0],
       status: entry.status,
       notes: entry.notes,
-      punishmentTriggered: entry.punishment,
+      punishmentSelected: entry.punishment ?? null,
+      punishmentResolvedAt: null,
       photoUrl: entry.status === 'done' && Math.random() > 0.7
         ? `https://picsum.photos/seed/${entry.userId}-${entry.daysAgo}/400/300`
         : undefined,
@@ -52,17 +53,19 @@ export function generateMockData(): { logs: WorkoutLog[]; punishments: Punishmen
   const punishments: PunishmentCounts = {
     // Madhu owes these (Arpit picked them when Madhu missed)
     madhu: {
-      'thirst-trap': 1,
-      'oral-credit': 1,
-      'double-down': 1,
+      'thirst-trap': { total: 1, resolved: 0 },
+      'oral-credit': { total: 1, resolved: 0 },
+      'double-down': { total: 1, resolved: 0 },
     },
     // Arpit owes these (Madhu picked them when Arpit missed)
     arpit: {
-      'video-shower': 1,
-      'sexual-teasing': 1,
-      'watch-together': 1,
+      'video-shower': { total: 1, resolved: 0 },
+      'sexual-teasing': { total: 1, resolved: 0 },
+      'watch-together': { total: 1, resolved: 0 },
     },
   };
 
-  return { logs, punishments };
+  const resolutionLog: ResolutionEvent[] = [];
+
+  return { logs, punishments, resolutionLog };
 }
