@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-workout_accountability_agreement
+Workout_Accountability_Agreement.docx
 
 # Editor directories and files
 .vscode/*
