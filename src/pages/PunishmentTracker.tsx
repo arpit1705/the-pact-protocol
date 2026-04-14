@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { USERS, getAllPunishments, getOtherUser } from '@/types';
+import type { PunishmentOption } from '@/types';
 import { useActiveUser } from '@/context/ActiveUserContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AppData } from '@/pages/Dashboard';
 
 interface PunishmentTrackerProps {
@@ -8,6 +11,7 @@ interface PunishmentTrackerProps {
 
 export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
   const { activeUser } = useActiveUser();
+  const [selected, setSelected] = useState<{ punishment: PunishmentOption; userId: string } | null>(null);
   const arpitTotal = data.getTotalPunishments('arpit');
   const madhuTotal = data.getTotalPunishments('madhu');
 
@@ -26,6 +30,46 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
           <span>{madhuLabel} <span className="text-accent">{madhuTotal}</span></span>
         </div>
       </div>
+
+      {/* Punishment detail dialog */}
+      {selected && (() => {
+        const { punishment: p, userId } = selected;
+        const counts = data.punishmentCounts[userId]?.[p.key];
+        const unresolvedCount = counts ? counts.total - counts.resolved : 0;
+        const isActive = unresolvedCount > 0;
+        const canResolve = activeUser !== userId;
+        const canClick = isActive && canResolve;
+
+        return (
+          <Dialog open onOpenChange={() => setSelected(null)}>
+            <DialogContent className="brutal-card max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3 text-2xl font-heading text-secondary">
+                  <span className="text-4xl">{p.emoji}</span>
+                  {p.name}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="font-mono text-sm font-bold text-muted-foreground">{p.description}</p>
+                <p className="font-body text-base leading-relaxed">{p.details}</p>
+                {isActive && (
+                  <div className="brutal-card bg-destructive/10 px-4 py-2 rounded-lg inline-block">
+                    <span className="font-heading text-destructive font-bold">×{unresolvedCount} outstanding</span>
+                  </div>
+                )}
+                {canClick && (
+                  <button
+                    onClick={() => { data.resolvePunishment(userId, p.key, activeUser); setSelected(null); }}
+                    className="brutal-btn w-full py-3 rounded-xl text-lg font-heading bg-success text-success-foreground hover-bounce"
+                  >
+                    ✓ Mark as Served
+                  </button>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* Per user sections */}
       {USERS.map(user => {
@@ -51,7 +95,8 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                 return (
                   <div
                     key={p.key}
-                    className={`brutal-card p-4 transition-all ${
+                    onClick={() => setSelected({ punishment: p, userId: user.id })}
+                    className={`brutal-card p-4 transition-all cursor-pointer hover:scale-[1.02] ${
                       isActive ? 'animate-pulse-glow' : 'opacity-50 grayscale'
                     }`}
                   >
@@ -64,7 +109,7 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                     <p className="font-heading text-xl text-secondary">{p.name}</p>
                     <p className="font-mono text-sm font-bold text-muted-foreground mb-3">{p.description}</p>
                     <button
-                      onClick={() => canClick && data.resolvePunishment(user.id, p.key, activeUser)}
+                      onClick={e => { e.stopPropagation(); canClick && data.resolvePunishment(user.id, p.key, activeUser); }}
                       disabled={!canClick}
                       title={
                         !canResolve

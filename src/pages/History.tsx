@@ -275,6 +275,7 @@ export default function History({ data }: HistoryProps) {
             date: logToEdit.date,
             status: logToEdit.status,
             notes: logToEdit.notes,
+            photoUrl: logToEdit.photoUrl,
           }}
           onClose={() => setEditingLog(null)}
         />
