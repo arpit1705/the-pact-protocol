@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { PunishmentSelector } from '@/components/PunishmentSelector';
 import { ConfettiCelebration } from '@/components/ConfettiCelebration';
 import { useActiveUser } from '@/context/ActiveUserContext';
+import { supabase } from '@/lib/supabase';
 import type { AppData } from '@/pages/Dashboard';
 
 interface LogWorkoutModalProps {
   data: AppData;
   initialUserId: string;
-  editLog?: { id: string; userId: string; date: string; status: 'done' | 'missed'; notes?: string };
+  editLog?: { id: string; userId: string; date: string; status: 'done' | 'missed'; notes?: string; photoUrl?: string };
   onClose: () => void;
 }
 
@@ -24,17 +25,83 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
   const [showMutualMiss, setShowMutualMiss] = useState(false);
   const [submittedLogId, setSubmittedLogId] = useState<string | null>(null);
 
-  const handleSubmit = () => {
+  // Photo state
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  // Holds either a local blob preview URL or the existing remote URL from editLog
+  const [photoPreview, setPhotoPreview] = useState<string | null>(editLog?.photoUrl ?? null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Clean up blob URLs on unmount or when preview changes
+  useEffect(() => {
+    return () => {
+      if (photoPreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  const applyPhotoFile = (file: File) => {
+    if (photoPreview?.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const clearPhoto = () => {
+    if (photoPreview?.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => setIsDragging(false);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file?.type.startsWith('image/')) applyPhotoFile(file);
+  };
+
+  const handleSubmit = async () => {
     if (!status) return;
 
+    let photoUrl: string | undefined = editLog?.photoUrl;
+
+    // Upload new photo if one was picked
+    if (photoFile) {
+      setIsUploading(true);
+      try {
+        const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const path = `${userId}/${date}-${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('workout_photos')
+          .upload(path, photoFile, { upsert: true });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('workout_photos').getPublicUrl(path);
+          photoUrl = urlData.publicUrl;
+        }
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     if (editLog) {
-      data.updateWorkoutLog(editLog.id, { userId, date, status, notes: notes || undefined });
+      data.updateWorkoutLog(editLog.id, { userId, date, status, notes: notes || undefined, photoUrl });
     } else {
-      const log = data.addWorkoutLog({
+      const log = await data.addWorkoutLog({
         userId,
         date,
         status,
         notes: notes || undefined,
+        photoUrl,
         punishmentSelected: null,
         punishmentResolvedAt: null,
       });
@@ -144,12 +211,52 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
         {/* Photo upload zone */}
         <div className="mb-4">
           <label className="font-mono text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-2">
-            Sweaty selfie? Drop it here 📸
+            Sweaty selfie? 📸
           </label>
-          <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center text-muted-foreground hover:border-primary transition-colors cursor-pointer">
-            <p className="text-3xl mb-2">📷</p>
-            <p className="font-mono text-sm font-bold">Photo upload coming soon™</p>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) applyPhotoFile(f); }}
+          />
+          {photoPreview ? (
+            <div className="relative rounded-lg overflow-hidden border-2 border-primary">
+              <img src={photoPreview} alt="Workout photo" className="w-full h-48 object-cover" />
+              <div className="absolute inset-0 flex items-end justify-between p-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="brutal-btn px-3 py-1 rounded-lg bg-background/90 font-mono text-xs font-bold"
+                >
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={clearPhoto}
+                  className="brutal-btn p-1.5 rounded-lg bg-background/90"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                isDragging
+                  ? 'border-primary bg-primary/5 text-primary'
+                  : 'border-muted-foreground/30 text-muted-foreground hover:border-primary'
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <p className="text-3xl mb-2">📷</p>
+              <p className="font-mono text-sm font-bold">Tap to add photo</p>
+              <p className="font-mono text-xs mt-1 opacity-60 hidden md:block">or drag & drop</p>
+            </div>
+          )}
         </div>
 
         {/* Notes */}
@@ -165,14 +272,14 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
 
         <button
           onClick={handleSubmit}
-          disabled={!status}
+          disabled={!status || isUploading}
           className={`brutal-btn w-full py-4 rounded-xl text-xl font-heading ${
-            status
+            status && !isUploading
               ? 'bg-primary text-primary-foreground hover-bounce'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
           }`}
         >
-          {status === 'missed' ? '😬 Submit & Face Consequences' : '🔥 Submit'}
+          {isUploading ? '⏳ Uploading photo...' : status === 'missed' ? '😬 Submit & Face Consequences' : '🔥 Submit'}
         </button>
       </div>
     </div>

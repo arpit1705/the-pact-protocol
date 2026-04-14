@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 
+workout_accountability_agreement
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
