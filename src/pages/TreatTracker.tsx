@@ -15,8 +15,8 @@ export default function TreatTracker({ data }: TreatTrackerProps) {
   const arpitTotal = data.getTotalTreats('arpit');
   const madhuTotal = data.getTotalTreats('madhu');
 
-  const arpitLabel = activeUser === 'arpit' ? '💪 Madhu has earned' : '🏋️ Arpit has earned';
-  const madhuLabel = activeUser === 'madhu' ? '🏋️ Arpit has earned' : '💪 Madhu has earned';
+  const arpitLabel = '💪 Madhu has earned';
+  const madhuLabel = '🏋️ Arpit has earned';
 
   return (
     <div className="container space-y-6 pb-8">
