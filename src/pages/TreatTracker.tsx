@@ -1,26 +1,26 @@
 import { useState } from 'react';
-import { USERS, getAllPunishments, getOtherUser } from '@/types';
-import type { PunishmentOption } from '@/types';
+import { USERS, getAllTreats, getOtherUser } from '@/types';
+import type { TreatOption } from '@/types';
 import { useActiveUser } from '@/context/ActiveUserContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AppData } from '@/pages/Dashboard';
 
-interface PunishmentTrackerProps {
+interface TreatTrackerProps {
   data: AppData;
 }
 
-export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
+export default function TreatTracker({ data }: TreatTrackerProps) {
   const { activeUser } = useActiveUser();
-  const [selected, setSelected] = useState<{ punishment: PunishmentOption; userId: string } | null>(null);
-  const arpitTotal = data.getTotalPunishments('arpit');
-  const madhuTotal = data.getTotalPunishments('madhu');
+  const [selected, setSelected] = useState<{ treat: TreatOption; userId: string } | null>(null);
+  const arpitTotal = data.getTotalTreats('arpit');
+  const madhuTotal = data.getTotalTreats('madhu');
 
-  const arpitLabel = activeUser === 'arpit' ? 'You owe' : '🏋️ Arpit owes';
-  const madhuLabel = activeUser === 'madhu' ? 'You owe' : '💪 Madhu owes';
+  const arpitLabel = activeUser === 'arpit' ? '💪 Madhu has earned' : '🏋️ Arpit has earned';
+  const madhuLabel = activeUser === 'madhu' ? '🏋️ Arpit has earned' : '💪 Madhu has earned';
 
   return (
     <div className="container space-y-6 pb-8">
-      <h2 className="text-4xl md:text-5xl font-heading text-secondary text-center">⚡ Punishment Tracker</h2>
+      <h2 className="text-4xl md:text-5xl font-heading text-secondary text-center">🎁 Treat Tracker</h2>
 
       {/* Scoreboard */}
       <div className="brutal-card bg-secondary text-secondary-foreground p-5">
@@ -31,10 +31,10 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
         </div>
       </div>
 
-      {/* Punishment detail dialog */}
+      {/* Treat detail dialog */}
       {selected && (() => {
-        const { punishment: p, userId } = selected;
-        const counts = data.punishmentCounts[userId]?.[p.key];
+        const { treat: p, userId } = selected;
+        const counts = data.treatCounts[userId]?.[p.key];
         const unresolvedCount = counts ? counts.total - counts.resolved : 0;
         const isActive = unresolvedCount > 0;
         const canResolve = activeUser !== userId;
@@ -59,10 +59,10 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                 )}
                 {canClick && (
                   <button
-                    onClick={() => { data.resolvePunishment(userId, p.key, activeUser); setSelected(null); }}
+                    onClick={() => { data.resolveTreat(userId, p.key, activeUser); setSelected(null); }}
                     className="brutal-btn w-full py-3 rounded-xl text-lg font-heading bg-success text-success-foreground hover-bounce"
                   >
-                    ✓ Mark as Served
+                    ✓ Redeem
                   </button>
                 )}
               </div>
@@ -73,12 +73,12 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
 
       {/* Per user sections */}
       {USERS.map(user => {
-        const punishments = getAllPunishments(user.id);
+        const treats = getAllTreats(user.id);
         const canResolve = activeUser !== user.id;
         const isOwnSection = activeUser === user.id;
         const sectionLabel = isOwnSection
-          ? `${user.emoji} Your Debts (read-only)`
-          : `${user.emoji} ${user.name}'s Debts — you can resolve these`;
+          ? `${user.emoji} Your Treats owed (read-only)`
+          : `${user.emoji} ${user.name}'s Treats — redeem these`;
 
         return (
           <div key={user.id}>
@@ -86,8 +86,8 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
               {sectionLabel}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {punishments.map(p => {
-                const counts = data.punishmentCounts[user.id]?.[p.key];
+              {treats.map(p => {
+                const counts = data.treatCounts[user.id]?.[p.key];
                 const unresolvedCount = counts ? counts.total - counts.resolved : 0;
                 const isActive = unresolvedCount > 0;
                 const canClick = isActive && canResolve;
@@ -95,7 +95,7 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                 return (
                   <div
                     key={p.key}
-                    onClick={() => setSelected({ punishment: p, userId: user.id })}
+                    onClick={() => setSelected({ treat: p, userId: user.id })}
                     className={`brutal-card p-4 transition-all cursor-pointer hover:scale-[1.02] ${
                       isActive ? 'animate-pulse-glow' : 'opacity-50 grayscale'
                     }`}
@@ -109,11 +109,11 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                     <p className="font-heading text-xl text-secondary">{p.name}</p>
                     <p className="font-mono text-sm font-bold text-muted-foreground mb-3">{p.description}</p>
                     <button
-                      onClick={e => { e.stopPropagation(); canClick && data.resolvePunishment(user.id, p.key, activeUser); }}
+                      onClick={e => { e.stopPropagation(); canClick && data.resolveTreat(user.id, p.key, activeUser); }}
                       disabled={!canClick}
                       title={
                         !canResolve
-                          ? `Switch to ${getOtherUser(user.id).name} to resolve this`
+                          ? `Switch to ${getOtherUser(user.id).name} to redeem this`
                           : undefined
                       }
                       className={`brutal-btn w-full py-2.5 rounded-lg text-base font-heading ${
@@ -122,7 +122,7 @@ export default function PunishmentTracker({ data }: PunishmentTrackerProps) {
                           : 'bg-muted text-muted-foreground cursor-not-allowed'
                       }`}
                     >
-                      ✓ Mark as Served
+                      ✓ Redeem
                     </button>
                   </div>
                 );

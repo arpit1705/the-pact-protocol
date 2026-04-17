@@ -3,20 +3,21 @@ import { User } from '@/types';
 interface UserCardProps {
   user: User;
   streak: number;
-  todayStatus: 'done' | 'missed' | 'not-logged';
+  todayStatus: 'done' | 'missed' | 'forgiven' | 'not-logged';
   monthlyCount: { done: number; total: number };
-  totalPunishments: number;
+  totalTreats: number;
   isActiveUser: boolean;
-  onPickPunishment?: () => void;
+  onPickTreat?: () => void;
 }
 
 const STATUS_CONFIG = {
   done: { label: '✅ DONE', className: 'bg-success text-success-foreground' },
   missed: { label: '❌ MISSED', className: 'bg-destructive text-destructive-foreground' },
+  forgiven: { label: '🫶 LET SLIDE', className: 'bg-purple-100 text-purple-700 border-purple-300' },
   'not-logged': { label: '⏳ NOT LOGGED YET', className: 'bg-accent text-accent-foreground' },
 };
 
-export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishments, isActiveUser, onPickPunishment }: UserCardProps) {
+export function UserCard({ user, streak, todayStatus, monthlyCount, totalTreats, isActiveUser, onPickTreat }: UserCardProps) {
   const status = STATUS_CONFIG[todayStatus];
 
   return (
@@ -31,9 +32,9 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishm
             )}
           </div>
         </div>
-        {totalPunishments > 0 && (
+        {totalTreats > 0 && (
           <span className="brutal-badge bg-destructive text-destructive-foreground animate-pulse-glow text-base">
-            {totalPunishments} owed
+            {totalTreats} treats 🎁
           </span>
         )}
       </div>
@@ -55,13 +56,13 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalPunishm
         </div>
       </div>
 
-      {/* Punishment alert — shown for the other user when they have pending missed workouts */}
-      {onPickPunishment && (
+      {/* Treat alert — shown for the other user when they have pending missed workouts */}
+      {onPickTreat && (
         <button
-          onClick={onPickPunishment}
+          onClick={onPickTreat}
           className="brutal-btn mt-3 w-full py-2.5 rounded-lg bg-destructive text-destructive-foreground text-base font-heading hover-bounce"
         >
-          ⚠️ {user.name} missed a workout! Pick their punishment →
+          🎁 {user.name} missed! Pick their treat →
         </button>
       )}
     </div>

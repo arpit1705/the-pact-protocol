@@ -7,7 +7,7 @@ import { Header } from "@/components/Header";
 import { useAppData } from "@/hooks/useAppData";
 import { ActiveUserProvider } from "@/context/ActiveUserContext";
 import Dashboard from "@/pages/Dashboard";
-import PunishmentTracker from "@/pages/PunishmentTracker";
+import TreatTracker from "@/pages/TreatTracker";
 import History from "@/pages/History";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -34,7 +34,7 @@ function AppContent() {
       <Header />
       <Routes>
         <Route path="/" element={<Dashboard data={data} />} />
-        <Route path="/punishments" element={<PunishmentTracker data={data} />} />
+        <Route path="/treats" element={<TreatTracker data={data} />} />
         <Route path="/history" element={<History data={data} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

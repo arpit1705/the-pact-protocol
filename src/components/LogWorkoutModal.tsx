@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { PunishmentSelector } from '@/components/PunishmentSelector';
+import { TreatSelector } from '@/components/TreatSelector';
 import { ConfettiCelebration } from '@/components/ConfettiCelebration';
 import { useActiveUser } from '@/context/ActiveUserContext';
 import { supabase } from '@/lib/supabase';
@@ -20,7 +20,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
   const [date, setDate] = useState(editLog?.date || new Date().toISOString().split('T')[0]);
   const [status, setStatus] = useState<'done' | 'missed' | null>(editLog?.status || null);
   const [notes, setNotes] = useState(editLog?.notes || '');
-  const [showPunishment, setShowPunishment] = useState(false);
+  const [showTreat, setShowTreat] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showMutualMiss, setShowMutualMiss] = useState(false);
   const [submittedLogId, setSubmittedLogId] = useState<string | null>(null);
@@ -102,8 +102,8 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
         status,
         notes: notes || undefined,
         photoUrl,
-        punishmentSelected: null,
-        punishmentResolvedAt: null,
+        treatSelected: null,
+        treatResolvedAt: null,
       });
       setSubmittedLogId(log.id);
       if (status === 'missed' && log.mutualMiss) {
@@ -116,7 +116,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
       setShowConfetti(true);
       setTimeout(onClose, 1500);
     } else {
-      setShowPunishment(true);
+      setShowTreat(true);
     }
   };
 
@@ -131,7 +131,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
           <p className="text-6xl mb-4">🤝</p>
           <h2 className="text-3xl font-heading text-secondary mb-2">Mutual Miss!</h2>
           <p className="font-mono text-base font-bold text-muted-foreground mb-6">
-            You both skipped on the same day. No punishments owed — this one cancels out.
+            You both skipped on the same day. No treats owed — this one cancels out.
             <br /><br />
             Don't let it happen again.
           </p>
@@ -146,9 +146,9 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
     );
   }
 
-  if (showPunishment) {
+  if (showTreat) {
     return (
-      <PunishmentSelector
+      <TreatSelector
         missedUserId={userId}
         data={data}
         logId={submittedLogId || editLog?.id}
@@ -279,7 +279,7 @@ export function LogWorkoutModal({ data, initialUserId, editLog, onClose }: LogWo
               : 'bg-muted text-muted-foreground cursor-not-allowed'
           }`}
         >
-          {isUploading ? '⏳ Uploading photo...' : status === 'missed' ? '😬 Submit & Face Consequences' : '🔥 Submit'}
+          {isUploading ? '⏳ Uploading photo...' : status === 'missed' ? '😬 Submit' : '🔥 Submit'}
         </button>
       </div>
     </div>

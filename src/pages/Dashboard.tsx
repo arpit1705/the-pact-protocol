@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { USERS } from '@/types';
 import { UserCard } from '@/components/UserCard';
 import { LogWorkoutModal } from '@/components/LogWorkoutModal';
-import { PunishmentSelector } from '@/components/PunishmentSelector';
+import { TreatSelector } from '@/components/TreatSelector';
 import { MotivationalBanner } from '@/components/MotivationalBanner';
 import { useAppData } from '@/hooks/useAppData';
 import { useActiveUser } from '@/context/ActiveUserContext';
@@ -17,20 +17,20 @@ interface DashboardProps {
 export default function Dashboard({ data }: DashboardProps) {
   const { activeUser } = useActiveUser();
   const [logModalOpen, setLogModalOpen] = useState(false);
-  const [punishmentModalUserId, setPunishmentModalUserId] = useState<string | null>(null);
+  const [treatModalUserId, setTreatModalUserId] = useState<string | null>(null);
 
   // Active user always first
   const sortedUsers = [...USERS].sort((a, b) => (a.id === activeUser ? -1 : b.id === activeUser ? 1 : 0));
 
   const otherUserId = activeUser === 'arpit' ? 'madhu' : 'arpit';
   const pendingMissedLogs = data.getPendingMissedLogs(otherUserId);
-  const hasPendingPunishment = pendingMissedLogs.length > 0;
+  const hasPendingTreat = pendingMissedLogs.length > 0;
 
-  const allPunishmentsResolved =
-    data.getTotalPunishments('arpit') === 0 && data.getTotalPunishments('madhu') === 0;
+  const allTreatsResolved =
+    data.getTotalTreats('arpit') === 0 && data.getTotalTreats('madhu') === 0;
   const noPendingMissed =
     data.getPendingMissedLogs('arpit').length === 0 && data.getPendingMissedLogs('madhu').length === 0;
-  const showCelebration = allPunishmentsResolved && noPendingMissed;
+  const showCelebration = allTreatsResolved && noPendingMissed;
 
   const activeUserObj = USERS.find(u => u.id === activeUser)!;
 
@@ -56,11 +56,11 @@ export default function Dashboard({ data }: DashboardProps) {
             streak={data.getStreakForUser(user.id)}
             todayStatus={data.getTodayStatus(user.id)}
             monthlyCount={data.getMonthlyCount(user.id)}
-            totalPunishments={data.getTotalPunishments(user.id)}
+            totalTreats={data.getTotalTreats(user.id === 'arpit' ? 'madhu' : 'arpit')}
             isActiveUser={user.id === activeUser}
-            onPickPunishment={
-              user.id === otherUserId && hasPendingPunishment
-                ? () => setPunishmentModalUserId(otherUserId)
+            onPickTreat={
+              user.id === otherUserId && hasPendingTreat
+                ? () => setTreatModalUserId(otherUserId)
                 : undefined
             }
           />
@@ -90,12 +90,12 @@ export default function Dashboard({ data }: DashboardProps) {
         />
       )}
 
-      {punishmentModalUserId && (
-        <PunishmentSelector
-          missedUserId={punishmentModalUserId}
+      {treatModalUserId && (
+        <TreatSelector
+          missedUserId={treatModalUserId}
           data={data}
           logId={pendingMissedLogs[0]?.id ?? null}
-          onClose={() => setPunishmentModalUserId(null)}
+          onClose={() => setTreatModalUserId(null)}
         />
       )}
     </div>

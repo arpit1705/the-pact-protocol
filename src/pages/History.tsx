@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { USERS, ARPIT_PICKS, MADHU_PICKS, WorkoutLog, PunishmentOption, ResolutionEvent } from '@/types';
+import { USERS, ARPIT_PICKS, MADHU_PICKS, WorkoutLog, TreatOption, ResolutionEvent } from '@/types';
 import { LogWorkoutModal } from '@/components/LogWorkoutModal';
 import { useActiveUser } from '@/context/ActiveUserContext';
 import type { AppData } from '@/pages/Dashboard';
@@ -10,16 +10,16 @@ interface HistoryProps {
 
 type TimelineEvent =
   | { kind: 'workout'; log: WorkoutLog }
-  | { kind: 'punishment'; log: WorkoutLog; option: PunishmentOption }
+  | { kind: 'treat'; log: WorkoutLog; option: TreatOption }
   | { kind: 'resolution'; event: ResolutionEvent };
 
-const allPunishments = [...ARPIT_PICKS, ...MADHU_PICKS];
-const getPunishmentOption = (key: string) => allPunishments.find(p => p.key === key);
+const allTreats = [...ARPIT_PICKS, ...MADHU_PICKS];
+const getTreatOption = (key: string) => allTreats.find(p => p.key === key);
 
 export default function History({ data }: HistoryProps) {
   const { activeUser } = useActiveUser();
   const [userFilter, setUserFilter] = useState<string>('both');
-  const [eventFilter, setEventFilter] = useState<'all' | 'workouts' | 'punishments' | 'resolutions'>('all');
+  const [eventFilter, setEventFilter] = useState<'all' | 'workouts' | 'treats' | 'resolutions' | 'passed'>('all');
   const [editingLog, setEditingLog] = useState<string | null>(null);
 
   // Monthly summary
@@ -41,9 +41,9 @@ export default function History({ data }: HistoryProps) {
 
     data.workoutLogs.forEach(log => {
       events.push({ kind: 'workout', log });
-      if (log.punishmentSelected) {
-        const option = getPunishmentOption(log.punishmentSelected);
-        if (option) events.push({ kind: 'punishment', log, option });
+      if (log.treatSelected) {
+        const option = getTreatOption(log.treatSelected);
+        if (option) events.push({ kind: 'treat', log, option });
       }
     });
 
@@ -60,7 +60,7 @@ export default function History({ data }: HistoryProps) {
       .filter(e => {
         // User filter
         if (userFilter !== 'both') {
-          if (e.kind === 'workout' || e.kind === 'punishment') {
+          if (e.kind === 'workout' || e.kind === 'treat') {
             if (e.log.userId !== userFilter) return false;
           } else if (e.kind === 'resolution') {
             if (e.event.debtorUserId !== userFilter) return false;
@@ -68,16 +68,17 @@ export default function History({ data }: HistoryProps) {
         }
         // Event type filter
         if (eventFilter === 'workouts') return e.kind === 'workout';
-        if (eventFilter === 'punishments') return e.kind === 'punishment';
+        if (eventFilter === 'treats') return e.kind === 'treat';
         if (eventFilter === 'resolutions') return e.kind === 'resolution';
+        if (eventFilter === 'passed') return e.kind === 'workout' && e.log.status === 'forgiven';
         return true;
       })
       .sort((a, b) => {
         const dateA = a.kind === 'resolution' ? a.event.resolvedAt : a.log.date;
         const dateB = b.kind === 'resolution' ? b.event.resolvedAt : b.log.date;
-        // Same date: sort workout before punishment before resolution
+        // Same date: sort workout before treat before resolution
         if (dateA === dateB) {
-          const kindOrder = { workout: 0, punishment: 1, resolution: 2 };
+          const kindOrder = { workout: 0, treat: 1, resolution: 2 };
           return kindOrder[a.kind] - kindOrder[b.kind];
         }
         return dateB.localeCompare(dateA);
@@ -132,8 +133,9 @@ export default function History({ data }: HistoryProps) {
         {[
           { id: 'all', label: '📋 All' },
           { id: 'workouts', label: '🏋️ Workouts' },
-          { id: 'punishments', label: '🔥 Punishments' },
+          { id: 'treats', label: '🎁 Treats' },
           { id: 'resolutions', label: '✅ Resolved' },
+          { id: 'passed', label: '🫶 Passed' },
         ].map(opt => (
           <button
             key={opt.id}
@@ -155,8 +157,9 @@ export default function History({ data }: HistoryProps) {
           if (event.kind === 'workout') {
             const log = event.log;
             const user = USERS.find(u => u.id === log.userId)!;
-            const punishment = log.punishmentSelected ? getPunishmentOption(log.punishmentSelected) : null;
-            const isPunishmentPending = log.status === 'missed' && log.punishmentSelected === null && !log.mutualMiss;
+            const treat = log.treatSelected ? getTreatOption(log.treatSelected) : null;
+            const isTreatPending = log.status === 'missed' && log.treatSelected === null && !log.mutualMiss;
+            const isForgiven = log.status === 'forgiven';
             const canEdit = activeUser === log.userId;
 
             return (
@@ -173,18 +176,20 @@ export default function History({ data }: HistoryProps) {
                     <span className={`brutal-badge ${
                       log.status === 'done'
                         ? 'bg-success text-success-foreground'
+                        : log.status === 'forgiven'
+                        ? 'bg-purple-100 text-purple-700 border-purple-300'
                         : 'bg-destructive text-destructive-foreground'
                     }`}>
-                      {log.status === 'done' ? '✅ Done' : '❌ Missed'}
+                      {log.status === 'done' ? '✅ Done' : log.status === 'forgiven' ? '🫶 Passed' : '❌ Missed'}
                     </span>
                     {log.mutualMiss && (
                       <span className="brutal-badge bg-muted text-muted-foreground text-xs">
                         🤝 Mutual Miss
                       </span>
                     )}
-                    {isPunishmentPending && (
+                    {isTreatPending && (
                       <span className="brutal-badge bg-accent text-accent-foreground animate-pulse-glow text-xs">
-                        ⚠️ PUNISHMENT PENDING
+                        👀 TREAT PENDING
                       </span>
                     )}
                     {canEdit && (
@@ -197,12 +202,17 @@ export default function History({ data }: HistoryProps) {
                     )}
                   </div>
                 </div>
+                {isForgiven && log.forgivenBy && (
+                  <p className="mt-1 ml-11 font-mono text-sm font-bold text-purple-600">
+                    🫶 {USERS.find(u => u.id === log.forgivenBy)?.name} let this one slide
+                  </p>
+                )}
                 {log.notes && (
                   <p className="mt-2 text-base text-muted-foreground ml-11">💬 {log.notes}</p>
                 )}
-                {punishment && (
+                {treat && (
                   <p className="mt-1 ml-11 font-mono text-sm font-bold text-destructive">
-                    ⚡ Punishment: {punishment.emoji} {punishment.name}
+                    🎁 Treat: {treat.emoji} {treat.name}
                   </p>
                 )}
                 {log.photoUrl && (
@@ -217,16 +227,16 @@ export default function History({ data }: HistoryProps) {
             );
           }
 
-          if (event.kind === 'punishment') {
+          if (event.kind === 'treat') {
             const log = event.log;
             const user = USERS.find(u => u.id === log.userId)!;
             return (
-              <div key={`punishment-${log.id}-${idx}`} className="brutal-card p-4 border-destructive/50">
+              <div key={`treat-${log.id}-${idx}`} className="brutal-card p-4 border-destructive/50">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🔥</span>
+                  <span className="text-2xl">🎁</span>
                   <div>
                     <p className="font-heading text-xl text-secondary">
-                      Punishment picked: {event.option.emoji} {event.option.name}
+                      Treat picked: {event.option.emoji} {event.option.name}
                     </p>
                     <p className="font-mono text-sm font-bold text-muted-foreground">
                       for {user.name}'s miss on {formatDate(log.date)}
@@ -239,14 +249,14 @@ export default function History({ data }: HistoryProps) {
 
           // resolution
           const resolverUser = USERS.find(u => u.id === event.event.resolvedBy);
-          const punishmentOption = getPunishmentOption(event.event.punishmentType);
+          const treatOption = getTreatOption(event.event.treatType);
           return (
             <div key={`resolution-${event.event.id}`} className="brutal-card p-4 border-success/50">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">✅</span>
                 <div>
                   <p className="font-heading text-xl text-secondary">
-                    {resolverUser?.name} marked {punishmentOption?.emoji} {punishmentOption?.name} as served
+                    {resolverUser?.name} redeemed {treatOption?.emoji} {treatOption?.name}
                   </p>
                   <p className="font-mono text-sm font-bold text-muted-foreground">
                     {formatDate(event.event.resolvedAt)}
