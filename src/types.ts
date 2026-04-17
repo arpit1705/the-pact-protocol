@@ -8,25 +8,26 @@ export interface WorkoutLog {
   id: string;
   userId: string;
   date: string; // ISO date string YYYY-MM-DD
-  status: 'done' | 'missed';
+  status: 'done' | 'missed' | 'forgiven';
   photoUrl?: string;
   notes?: string;
-  punishmentSelected: string | null;
-  punishmentResolvedAt: string | null;
-  mutualMiss?: boolean; // true when both users missed on the same date — punishment cancelled
+  treatSelected: string | null;
+  treatResolvedAt: string | null;
+  mutualMiss?: boolean; // true when both users missed on the same date — treat cancelled
+  forgivenBy: string | null; // userId of the partner who chose to let it slide
 }
 
-export type PunishmentCounts = Record<string, Record<string, { total: number; resolved: number }>>;
+export type TreatCounts = Record<string, Record<string, { total: number; resolved: number }>>;
 
 export interface ResolutionEvent {
   id: string;
   debtorUserId: string;
-  punishmentType: string;
+  treatType: string;
   resolvedBy: string;
   resolvedAt: string; // ISO YYYY-MM-DD
 }
 
-export interface PunishmentOption {
+export interface TreatOption {
   key: string;
   name: string;
   description: string;
@@ -39,13 +40,13 @@ export const USERS: User[] = [
   { id: 'madhu', name: 'Madhu', emoji: '💪' },
 ];
 
-// Punishments the OTHER user picks when someone misses
+// Treats the OTHER user picks when someone misses
 // When Madhu misses → Arpit picks from these
-export const ARPIT_PICKS: PunishmentOption[] = [
+export const ARPIT_PICKS: TreatOption[] = [
   {
     key: 'thirst-trap',
     name: 'Thirst Trap on Demand',
-    description: 'Strike a pose. No excuses.',
+    description: 'Yours to request. No excuses.',
     details: 'Must deliver one high-effort, well-lit, genuinely sexy photo. Pose to be specified. No lazy, half-hearted, or poorly lit submissions accepted.',
     emoji: '📸',
   },
@@ -59,7 +60,7 @@ export const ARPIT_PICKS: PunishmentOption[] = [
   {
     key: 'story-time',
     name: 'Story Time',
-    description: 'Read aloud something of their choosing.',
+    description: 'Sit back and enjoy a bedtime story.',
     details: 'Must conduct one dedicated bedtime storytelling session that evening, with full attention, no distractions, and phone face-down. Topic chosen by the storyteller. Goal: put the other person to sleep.',
     emoji: '📖',
   },
@@ -73,21 +74,21 @@ export const ARPIT_PICKS: PunishmentOption[] = [
   {
     key: 'double-down',
     name: 'Double Down',
-    description: '10 push-ups + 30 squats next day. No mercy.',
+    description: 'They do 10 push-ups + 30 squats tomorrow. Evidence required.',
     details: 'Must complete 10 push-ups AND 30 squats the following day, in addition to the regular workout. Evidence required.',
     emoji: '💪',
   },
   {
     key: 'salad-sentence',
     name: 'Salad Sentence',
-    description: 'Next meal is leaves only. Suffer.',
+    description: 'Their dinner is salad only tonight.',
     details: 'Dinner that evening shall consist of salad only. No exceptions, no sneaky additions.',
     emoji: '🥗',
   },
 ];
 
 // When Arpit misses → Madhu picks from these
-export const MADHU_PICKS: PunishmentOption[] = [
+export const MADHU_PICKS: TreatOption[] = [
   {
     key: 'video-shower',
     name: 'Video Call Shower',
@@ -98,7 +99,7 @@ export const MADHU_PICKS: PunishmentOption[] = [
   {
     key: 'watch-together',
     name: 'Watch Something Together',
-    description: 'Their pick. No complaints.',
+    description: 'Your pick. No complaints.',
     details: 'Must watch a show or movie of the other party\'s choosing, together, that night. No skipping, no falling asleep, no phone during the show.',
     emoji: '🎬',
   },
@@ -119,7 +120,7 @@ export const MADHU_PICKS: PunishmentOption[] = [
   {
     key: 'sexual-teasing',
     name: 'Sexual Teasing',
-    description: 'All tease, no release. Cruel.',
+    description: 'All tease, no release. Enjoy.',
     details: 'Must tease the other party sexually in a form of their choosing — may include a nude, a sext, or an explicit voice note. Effort and intent are mandatory.',
     emoji: '🔥',
   },
@@ -135,8 +136,8 @@ export const MADHU_PICKS: PunishmentOption[] = [
 export const getOtherUser = (userId: string): User =>
   USERS.find(u => u.id !== userId)!;
 
-export const getPunishmentOptions = (missedUserId: string): PunishmentOption[] =>
+export const getTreatOptions = (missedUserId: string): TreatOption[] =>
   missedUserId === 'madhu' ? ARPIT_PICKS : MADHU_PICKS;
 
-export const getAllPunishments = (userId: string): PunishmentOption[] =>
+export const getAllTreats = (userId: string): TreatOption[] =>
   userId === 'madhu' ? ARPIT_PICKS : MADHU_PICKS;

@@ -1,31 +1,39 @@
 import { useState } from 'react';
-import { getOtherUser, getPunishmentOptions, USERS } from '@/types';
+import { getOtherUser, getTreatOptions, USERS } from '@/types';
 import { X } from 'lucide-react';
 import { useActiveUser } from '@/context/ActiveUserContext';
 import type { AppData } from '@/pages/Dashboard';
 
-interface PunishmentSelectorProps {
+interface TreatSelectorProps {
   missedUserId: string;
   data: AppData;
   logId?: string | null;
   onClose: () => void;
 }
 
-export function PunishmentSelector({ missedUserId, data, logId, onClose }: PunishmentSelectorProps) {
+export function TreatSelector({ missedUserId, data, logId, onClose }: TreatSelectorProps) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [step, setStep] = useState<'selecting' | 'confirming-forgive'>('selecting');
   const { activeUser } = useActiveUser();
   const missedUser = USERS.find(u => u.id === missedUserId)!;
   const otherUser = getOtherUser(missedUserId);
-  const options = getPunishmentOptions(missedUserId);
+  const options = getTreatOptions(missedUserId);
 
-  // Active user must be the OTHER person (not the one who missed) to pick punishment
+  // Active user must be the OTHER person (not the one who missed) to pick a treat
   const canPick = activeUser !== missedUserId;
 
   const handleConfirm = () => {
     if (!selected) return;
-    data.incrementPunishment(missedUserId, selected);
+    data.incrementTreat(missedUserId, selected);
     if (logId) {
-      data.updateWorkoutLog(logId, { punishmentSelected: selected });
+      data.updateWorkoutLog(logId, { treatSelected: selected });
+    }
+    onClose();
+  };
+
+  const handleForgive = () => {
+    if (logId) {
+      data.updateWorkoutLog(logId, { status: 'forgiven', forgivenBy: activeUser });
     }
     onClose();
   };
@@ -44,7 +52,7 @@ export function PunishmentSelector({ missedUserId, data, logId, onClose }: Punis
           <p className="font-mono text-base font-bold text-muted-foreground mb-6">
             You missed your workout, <strong className="text-foreground">{missedUser.name} {missedUser.emoji}</strong>.
             <br /><br />
-            Switch to <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong> using the pill in the top-right to pick your punishment.
+            Switch to <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong> using the pill in the top-right to pick your treat.
           </p>
           <button
             onClick={onClose}
@@ -57,20 +65,53 @@ export function PunishmentSelector({ missedUserId, data, logId, onClose }: Punis
     );
   }
 
+  // Forgiveness confirmation step
+  if (step === 'confirming-forgive') {
+    return (
+      <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+        <div className="brutal-card bg-background w-full md:max-w-lg md:rounded-xl rounded-t-2xl rounded-b-none md:rounded-b-xl p-6 animate-bounce-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-heading text-secondary">🤝 Let It Slide?</h2>
+            <button onClick={onClose} className="brutal-btn p-2 rounded-lg bg-muted">
+              <X size={18} />
+            </button>
+          </div>
+          <p className="font-mono text-base font-bold text-muted-foreground mb-8">
+            You're letting this one slide. That's love. 🤝
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleForgive}
+              className="brutal-btn w-full py-4 rounded-xl text-xl font-heading bg-primary text-primary-foreground hover-bounce"
+            >
+              Yes, let it slide
+            </button>
+            <button
+              onClick={() => setStep('selecting')}
+              className="brutal-btn w-full py-3 rounded-xl text-lg font-heading bg-muted text-muted-foreground hover-bounce"
+            >
+              Actually, pick a treat
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
       <div className="brutal-card bg-background w-full md:max-w-2xl md:rounded-xl rounded-t-2xl rounded-b-none md:rounded-b-xl p-6 max-h-[90vh] overflow-y-auto animate-bounce-in">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-heading text-destructive">⚠️ Punishment Time!</h2>
+          <h2 className="text-2xl font-heading text-destructive">🎁 Treat Time!</h2>
           <button onClick={onClose} className="brutal-btn p-2 rounded-lg bg-muted">
             <X size={18} />
           </button>
         </div>
 
         <p className="font-mono text-base font-bold mb-6 text-muted-foreground">
-          Uh oh! <strong className="text-foreground">{missedUser.name} {missedUser.emoji}</strong> missed their workout.
+          <strong className="text-foreground">{missedUser.name} {missedUser.emoji}</strong> missed their workout.
           <br />
-          <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong>, pick your punishment:
+          <strong className="text-foreground">{otherUser.name} {otherUser.emoji}</strong>, pick your treat 🎁:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -94,13 +135,20 @@ export function PunishmentSelector({ missedUserId, data, logId, onClose }: Punis
         <button
           onClick={handleConfirm}
           disabled={!selected}
-          className={`brutal-btn w-full py-4 rounded-xl text-xl font-heading ${
+          className={`brutal-btn w-full py-4 rounded-xl text-xl font-heading mb-3 ${
             selected
               ? 'bg-destructive text-destructive-foreground hover-bounce'
               : 'bg-muted text-muted-foreground cursor-not-allowed'
           }`}
         >
-          ⚖️ Confirm Punishment
+          🎁 Pick This Treat
+        </button>
+
+        <button
+          onClick={() => setStep('confirming-forgive')}
+          className="brutal-btn w-full py-4 rounded-xl text-xl font-heading bg-muted text-muted-foreground border-2 border-foreground hover-bounce"
+        >
+          Let it slide 🤝
         </button>
       </div>
     </div>

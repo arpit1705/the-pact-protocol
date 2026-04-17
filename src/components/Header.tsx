@@ -6,7 +6,7 @@ import { useActiveUser } from '@/context/ActiveUserContext';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', emoji: '🏠' },
-  { path: '/punishments', label: 'Punishments', emoji: '⚡' },
+  { path: '/treats', label: 'Treats', emoji: '🎁' },
   { path: '/history', label: 'History', emoji: '📜' },
 ];
 
