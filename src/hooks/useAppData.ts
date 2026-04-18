@@ -293,7 +293,7 @@ export function useAppData() {
 
   const updateWorkoutLog = useCallback(
     (id: string, updates: Partial<WorkoutLog>) =>
-      updateWorkoutLogMutation.mutate({ id, updates }),
+      updateWorkoutLogMutation.mutateAsync({ id, updates }),
     [updateWorkoutLogMutation],
   );
 

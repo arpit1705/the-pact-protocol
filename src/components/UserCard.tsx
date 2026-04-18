@@ -33,7 +33,7 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalTreats,
           </div>
         </div>
         {totalTreats > 0 && (
-          <span className="brutal-badge bg-destructive text-destructive-foreground animate-pulse-glow text-base">
+          <span className="brutal-badge bg-amber-400 text-amber-900 animate-pulse-glow text-base">
             {totalTreats} treats 🎁
           </span>
         )}
@@ -60,7 +60,7 @@ export function UserCard({ user, streak, todayStatus, monthlyCount, totalTreats,
       {onPickTreat && (
         <button
           onClick={onPickTreat}
-          className="brutal-btn mt-3 w-full py-2.5 rounded-lg bg-destructive text-destructive-foreground text-base font-heading hover-bounce"
+          className="brutal-btn mt-3 w-full py-2.5 rounded-lg bg-amber-400 text-amber-900 text-base font-heading hover-bounce"
         >
           🎁 {user.name} missed! Pick their treat →
         </button>
