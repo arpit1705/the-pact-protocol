@@ -14,6 +14,7 @@ interface TreatSelectorProps {
 export function TreatSelector({ missedUserId, data, logId, onClose }: TreatSelectorProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [step, setStep] = useState<'selecting' | 'confirming-forgive'>('selecting');
+  const [forgiving, setForgiving] = useState(false);
   const { activeUser } = useActiveUser();
   const missedUser = USERS.find(u => u.id === missedUserId)!;
   const otherUser = getOtherUser(missedUserId);
@@ -31,11 +32,16 @@ export function TreatSelector({ missedUserId, data, logId, onClose }: TreatSelec
     onClose();
   };
 
-  const handleForgive = () => {
-    if (logId) {
-      data.updateWorkoutLog(logId, { status: 'forgiven', forgivenBy: activeUser });
+  const handleForgive = async () => {
+    setForgiving(true);
+    try {
+      if (logId) {
+        await data.updateWorkoutLog(logId, { status: 'forgiven', forgivenBy: activeUser });
+      }
+      onClose();
+    } catch {
+      setForgiving(false);
     }
-    onClose();
   };
 
   // Wrong user — show a redirect message
@@ -82,9 +88,10 @@ export function TreatSelector({ missedUserId, data, logId, onClose }: TreatSelec
           <div className="flex flex-col gap-3">
             <button
               onClick={handleForgive}
-              className="brutal-btn w-full py-4 rounded-xl text-xl font-heading bg-primary text-primary-foreground hover-bounce"
+              disabled={forgiving}
+              className={`brutal-btn w-full py-4 rounded-xl text-xl font-heading ${forgiving ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-primary text-primary-foreground hover-bounce'}`}
             >
-              Yes, let it slide
+              {forgiving ? '⏳ Saving...' : 'Yes, let it slide'}
             </button>
             <button
               onClick={() => setStep('selecting')}
