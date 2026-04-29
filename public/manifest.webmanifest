@@ -1,0 +1,17 @@
+{
+  "name": "The Pact",
+  "short_name": "The Pact",
+  "description": "A binding covenant between two people who love each other",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFE033",
+  "theme_color": "#1A1A3E",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
