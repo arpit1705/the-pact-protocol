@@ -12,6 +12,18 @@ interface TreatTrackerProps {
 export default function TreatTracker({ data }: TreatTrackerProps) {
   const { activeUser } = useActiveUser();
   const [selected, setSelected] = useState<{ treat: TreatOption; userId: string } | null>(null);
+  const [confirm, setConfirm] = useState<{ treat: TreatOption; userId: string } | null>(null);
+
+  function handleRedeem(userId: string, treat: TreatOption) {
+    setConfirm({ userId, treat });
+  }
+
+  function confirmRedeem() {
+    if (!confirm) return;
+    data.resolveTreat(confirm.userId, confirm.treat.key, activeUser);
+    setConfirm(null);
+    setSelected(null);
+  }
   const arpitTotal = data.getTotalTreats('arpit');
   const madhuTotal = data.getTotalTreats('madhu');
 
@@ -59,7 +71,7 @@ export default function TreatTracker({ data }: TreatTrackerProps) {
                 )}
                 {canClick && (
                   <button
-                    onClick={() => { data.resolveTreat(userId, p.key, activeUser); setSelected(null); }}
+                    onClick={() => handleRedeem(userId, p)}
                     className="brutal-btn w-full py-3 rounded-xl text-lg font-heading bg-success text-success-foreground hover-bounce"
                   >
                     ✓ Redeem
@@ -70,6 +82,39 @@ export default function TreatTracker({ data }: TreatTrackerProps) {
           </Dialog>
         );
       })()}
+
+      {/* Confirmation dialog */}
+      {confirm && (
+        <Dialog open onOpenChange={() => setConfirm(null)}>
+          <DialogContent className="brutal-card max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-2xl font-heading text-secondary">
+                <span className="text-4xl">{confirm.treat.emoji}</span>
+                Redeem treat?
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="font-body text-base">
+                Mark <span className="font-heading text-secondary">{confirm.treat.name}</span> as redeemed?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirm(null)}
+                  className="brutal-btn flex-1 py-2.5 rounded-lg text-base font-heading bg-muted text-muted-foreground hover-bounce"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRedeem}
+                  className="brutal-btn flex-1 py-2.5 rounded-lg text-base font-heading bg-success text-success-foreground hover-bounce"
+                >
+                  ✓ Confirm
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Per user sections */}
       {USERS.map(user => {
@@ -109,7 +154,7 @@ export default function TreatTracker({ data }: TreatTrackerProps) {
                     <p className="font-heading text-xl text-secondary">{p.name}</p>
                     <p className="font-mono text-sm font-bold text-muted-foreground mb-3">{p.description}</p>
                     <button
-                      onClick={e => { e.stopPropagation(); canClick && data.resolveTreat(user.id, p.key, activeUser); }}
+                      onClick={e => { e.stopPropagation(); canClick && handleRedeem(user.id, p); }}
                       disabled={!canClick}
                       title={
                         !canResolve
